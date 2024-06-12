@@ -9,47 +9,46 @@ springboot demo project
 
 # 增加flyway功能
 1. 添加pom.xml依赖
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-jdbc</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+       <version>8.0.28</version>
+   </dependency>
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>7.15.0</version>
+    </dependency>
+2. 添加flyway yml配置及数据库连接
 server:
    port: 10001
 
 spring:
     datasource:
-        url: jdbc:mysql://127.0.0.1:3307/flyway?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&serverTimezone=GMT%2B8
+        url: jdbc:mysql://127.0.0.1:3306/flyway?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&serverTimezone=GMT%2B8
         username: root
         password: pass4Zentao
     flyway:
-        # 启用或禁用 flyway
         enabled: true
-        # flyway 的 clean 命令会删除指定 schema 下的所有 table, 生产务必禁掉。这个默认值是 false 理论上作为默认配置是不科学的。
+        # 禁止清理数据库表
         clean-disabled: true
-        # SQL 脚本的目录,多个路径使用逗号分隔 默认值 classpath:db/migration
-        locations: classpath:db/migration
-        #  metadata 版本控制信息表 默认 flyway_schema_history
-        table: flyway_schema_history
-        # 如果没有 flyway_schema_history 这个 metadata 表， 在执行 flyway migrate 命令之前, 必须先执行 flyway baseline 命令
-        # 设置为 true 后 flyway 将在需要 baseline 的时候, 自动执行一次 baseline。
+        # 如果数据库不是空表，需要设置成 true，否则启动报错
         baseline-on-migrate: true
-        # 指定 baseline 的版本号,默认值为 1, 低于该版本号的 SQL 文件, migrate 时会被忽略
-        baseline-version: 1
-        # 字符编码 默认 UTF-8
-        encoding: UTF-8
-        # 是否允许不按顺序迁移 开发建议 true  生产建议 false
-        out-of-order: false
-        # 需要 flyway 管控的 schema list,这里我们配置为flyway  缺省的话, 使用spring.datasource.url 配置的那个 schema,
-        # 可以指定多个schema, 但仅会在第一个schema下建立 metadata 表, 也仅在第一个schema应用migration sql 脚本.
-        # 但flyway Clean 命令会依次在这些schema下都执行一遍. 所以 确保生产 spring.flyway.clean-disabled 为 true
-        schemas: flyway
-        # 执行迁移时是否自动调用验证   当你的 版本不符合逻辑 比如 你先执行了 DML 而没有 对应的DDL 会抛出异常
-        validate-on-migrate: true
-
-2.添加flyway yml配置及数据库连接
+        # 与 baseline-on-migrate: true 搭配使用
+        baseline-version: 0
+        locations:
+            - classpath:db/migration/mysql（根据个人情况设置）
 
 3.在resources目录下创建目录db.migration并添加迁移sql文件
 V1__Create_person_table.sql
-create table PERSON (
-ID int not null,
-NAME varchar(100) not null
-);
+    create table PERSON (
+    ID int not null,
+    NAME varchar(100) not null
+    );
 
 4.启动springboot，自动进行flyway数据库迁移
 Flyway Community Edition 7.15.0 by Redgate
